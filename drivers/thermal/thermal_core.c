@@ -1728,13 +1728,24 @@ static ssize_t
 thermal_sconfig_store(struct device *dev,
 				      struct device_attribute *attr, const char *buf, size_t len)
 {
-	int val = -1;
+    int ret = -1;
+    int val;
 
-	val = simple_strtol(buf, NULL, 10);
+    ret = kstrtoint(buf, 10, &val);
 
-	atomic_set(&switch_mode, val);
+    if (ret)
+        return ret;
 
-	return len;
+    // Handle thermal mode switching based on input value
+    if (val == 0) {
+        atomic_set(&switch_mode, 10);
+    } else if (val == -1) {
+        atomic_set(&switch_mode, -1);
+    } else {
+        atomic_set(&switch_mode, val);
+    }
+
+    return len;
 }
 
 static DEVICE_ATTR(sconfig, 0664,
